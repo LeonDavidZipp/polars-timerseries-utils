@@ -1,6 +1,7 @@
 [project]
 name = "polars-timeseries-utils"
-version = "0.1.2"
+# workflow: 1. push test ver number (*.*.*a*) to development, 2. push stable ver number (*.*.*) to development, 3. merge development into main
+version = "0.1.3a1"
 description = "Library with utility functions for Polars DataFrames, similar to scikit-learn & pandas functionalities."
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
