@@ -4,7 +4,7 @@ version = "0.1.3"
 description = "Library with utility functions for Polars DataFrames, similar to scikit-learn & pandas functionalities."
 readme = "README.md"
 authors = [
-    { name = "Leon David Zipp", email = "leondavidzipp@gmail.com" }
+    { name = "Leon David Zipp", email = "leondavidzipp@proton.me" }
 ]
 requires-python = ">=3.13"
 dependencies = [
@@ -12,7 +12,6 @@ dependencies = [
     "pandas>=2.3.3",
     "polars>=1.36.1",
     "pyarrow>=22.0.0",
-    "pytest>=9.0.2",
 ]
 
 [project.urls]
