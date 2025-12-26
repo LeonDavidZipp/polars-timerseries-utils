@@ -1,10 +1,11 @@
 from .base import BaseMultiColumnTransformer
-from .multi_column_transformer import MultiColumnTransformer, TransformerData
-from .pipeline import Pipeline
+from .multi_column_transformer import ColumnTransformerMetadata, MultiColumnTransformer
+from .pipeline import MultiColumnTransformerMetadata, Pipeline
 
 __all__ = [
 	"MultiColumnTransformer",
-	"TransformerData",
+	"ColumnTransformerMetadata",
 	"BaseMultiColumnTransformer",
 	"Pipeline",
+	"MultiColumnTransformerMetadata",
 ]
