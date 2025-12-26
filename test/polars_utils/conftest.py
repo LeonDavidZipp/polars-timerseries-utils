@@ -35,19 +35,6 @@ def df_clean_date_col() -> pl.DataFrame:
 
 
 @pytest.fixture
-def df_clean_datetime_col() -> pl.DataFrame:
-	"""Clean DataFrame with datetime column named 'datetime'."""
-	return pl.DataFrame(
-		{
-			"datetime": [datetime(2023, 1, i, 12, 30, 0) for i in range(1, 21)],
-			"value": [float(i * 10) for i in range(1, 21)],
-			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
 def df_clean_ds_col() -> pl.DataFrame:
 	"""Clean DataFrame with datetime column named 'ds' (Prophet format)."""
 	return pl.DataFrame(
@@ -61,37 +48,6 @@ def df_clean_ds_col() -> pl.DataFrame:
 
 
 @pytest.fixture
-def df_clean_time_col() -> pl.DataFrame:
-	"""Clean DataFrame with datetime column named 'time'."""
-	return pl.DataFrame(
-		{
-			"time": [datetime(2023, 1, i) for i in range(1, 21)],
-			"values": [float(i * 10) for i in range(1, 21)],
-			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
-def df_clean_unordered() -> pl.DataFrame:
-	"""Clean DataFrame with unordered timestamps."""
-	import random
-
-	indices = list(range(1, 21))
-	random.seed(42)
-	random.shuffle(indices)
-	return pl.DataFrame(
-		{
-			"timestamp": [datetime(2023, 1, i) for i in indices],
-			"value": [float(i * 10) for i in indices],
-			"measurement": [float(i * 5 + 3) for i in indices],
-			"target": [float(i * 2 - 1) for i in indices],
-		}
-	)
-
-
-@pytest.fixture
 def lf_clean() -> pl.LazyFrame:
 	"""Clean LazyFrame with datetime timestamp column."""
 	return pl.DataFrame(
@@ -100,6 +56,130 @@ def lf_clean() -> pl.LazyFrame:
 			"value": [float(i * 10) for i in range(1, 21)],
 			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
 			"target": [float(i * 2 - 1) for i in range(1, 21)],
+		}
+	).lazy()
+
+
+# =============================================================================
+# DATAFRAMES WITH NULLS - For imputer testing
+# =============================================================================
+
+
+@pytest.fixture
+def series_with_nulls() -> pl.Series:
+	"""Series with null values for imputer testing."""
+	return pl.Series("value", [1.0, None, 3.0, None, 5.0, 6.0, None, 8.0, 9.0, 10.0])
+
+
+@pytest.fixture
+def series_with_nulls_at_edges() -> pl.Series:
+	"""Series with null values at the beginning and end."""
+	return pl.Series("value", [None, None, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, None, None])
+
+
+@pytest.fixture
+def series_no_nulls() -> pl.Series:
+	"""Series without null values."""
+	return pl.Series("value", [float(i) for i in range(1, 11)])
+
+
+@pytest.fixture
+def series_all_nulls() -> pl.Series:
+	"""Series with all null values."""
+	return pl.Series("value", [None] * 10, dtype=pl.Float64)
+
+
+# =============================================================================
+# DATAFRAMES FOR SCALER TESTING
+# =============================================================================
+
+
+@pytest.fixture
+def series_for_scaling() -> pl.Series:
+	"""Series with known min/max for scaler testing."""
+	return pl.Series("value", [0.0, 25.0, 50.0, 75.0, 100.0])
+
+
+@pytest.fixture
+def series_with_negative_values() -> pl.Series:
+	"""Series with negative values for scaler testing."""
+	return pl.Series("value", [-50.0, -25.0, 0.0, 25.0, 50.0])
+
+
+@pytest.fixture
+def series_constant() -> pl.Series:
+	"""Series with constant values (edge case for scaling)."""
+	return pl.Series("value", [5.0, 5.0, 5.0, 5.0, 5.0])
+
+
+# =============================================================================
+# DATAFRAMES FOR SMOOTHER TESTING
+# =============================================================================
+
+
+@pytest.fixture
+def series_with_outliers() -> pl.Series:
+	"""Series with outliers for smoother testing."""
+	return pl.Series(
+		"value", [10.0, 11.0, 12.0, 100.0, 13.0, 14.0, -50.0, 15.0, 16.0, 17.0]
+	)
+
+
+@pytest.fixture
+def series_normal_distribution() -> pl.Series:
+	"""Series with approximately normal distribution."""
+	return pl.Series("value", [10.0, 11.0, 9.5, 10.5, 10.2, 9.8, 10.1, 9.9, 10.3, 10.0])
+
+
+# =============================================================================
+# DATAFRAMES FOR MULTI-COLUMN TRANSFORMER TESTING
+# =============================================================================
+
+
+@pytest.fixture
+def df_multi_column() -> pl.DataFrame:
+	"""DataFrame with multiple numeric columns for MultiColumnTransformer testing."""
+	return pl.DataFrame(
+		{
+			"timestamp": [datetime(2023, 1, i) for i in range(1, 11)],
+			"col_a": [1.0, None, 3.0, 4.0, 5.0, None, 7.0, 8.0, 9.0, 10.0],
+			"col_b": [10.0, 20.0, None, 40.0, 50.0, 60.0, None, 80.0, 90.0, 100.0],
+			"col_c": [
+				100.0,
+				200.0,
+				300.0,
+				400.0,
+				500.0,
+				600.0,
+				700.0,
+				800.0,
+				900.0,
+				1000.0,
+			],
+		}
+	)
+
+
+@pytest.fixture
+def lf_multi_column() -> pl.LazyFrame:
+	"""LazyFrame with multiple numeric columns for MultiColumnTransformer testing."""
+	return pl.DataFrame(
+		{
+			"timestamp": [datetime(2023, 1, i) for i in range(1, 11)],
+			"col_a": [1.0, None, 3.0, 4.0, 5.0, None, 7.0, 8.0, 9.0, 10.0],
+			"col_b": [10.0, 20.0, None, 40.0, 50.0, 60.0, None, 80.0, 90.0, 100.0],
+			"col_c": [
+				100.0,
+				200.0,
+				300.0,
+				400.0,
+				500.0,
+				600.0,
+				700.0,
+				800.0,
+				900.0,
+				1000.0,
+			],
 		}
 	).lazy()
 
@@ -219,16 +299,16 @@ def df_unclean_timestamp_str_datetime_dmy_slash() -> pl.DataFrame:
 
 
 @pytest.fixture
-def df_unclean_value_str() -> pl.DataFrame:
-	"""DataFrame with string value column that can be cast to numeric."""
+def lf_unclean_timestamp_str() -> pl.LazyFrame:
+	"""LazyFrame with string timestamp that needs casting."""
 	return pl.DataFrame(
 		{
-			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],
-			"value": [str(float(i * 10)) for i in range(1, 21)],
+			"timestamp": [f"2023-01-{i:02d}" for i in range(1, 21)],
+			"value": [float(i * 10) for i in range(1, 21)],
 			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
 			"target": [float(i * 2 - 1) for i in range(1, 21)],
 		}
-	)
+	).lazy()
 
 
 # =============================================================================
@@ -242,66 +322,6 @@ def df_unclean_no_standard_timestamp_name() -> pl.DataFrame:
 	return pl.DataFrame(
 		{
 			"my_custom_date": [datetime(2023, 1, i) for i in range(1, 21)],
-			"value": [float(i * 10) for i in range(1, 21)],
-			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
-def df_unclean_no_standard_value_name() -> pl.DataFrame:
-	"""DataFrame with numeric column but non-standard name."""
-	return pl.DataFrame(
-		{
-			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],
-			"my_custom_value": [float(i * 10) for i in range(1, 21)],
-			"another_number": [float(i * 5 + 3) for i in range(1, 21)],
-			"third_number": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
-def df_unclean_no_standard_names() -> pl.DataFrame:
-	"""DataFrame with no standard column names for timestamp or value."""
-	return pl.DataFrame(
-		{
-			"my_custom_date": [datetime(2023, 1, i) for i in range(1, 21)],
-			"my_custom_value": [float(i * 10) for i in range(1, 21)],
-			"another_number": [float(i * 5 + 3) for i in range(1, 21)],
-			"third_number": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-# =============================================================================
-# UNCLEAN DATAFRAMES - Missing values
-# =============================================================================
-
-
-@pytest.fixture
-def df_unclean_with_nulls() -> pl.DataFrame:
-	"""DataFrame with null values in numeric columns."""
-	values = [float(i * 10) if i % 5 != 0 else None for i in range(1, 21)]
-	measurements = [float(i * 5 + 3) if i % 7 != 0 else None for i in range(1, 21)]
-	return pl.DataFrame(
-		{
-			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],
-			"value": values,
-			"measurement": measurements,
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
-def df_unclean_with_timestamp_nulls() -> pl.DataFrame:
-	"""DataFrame with null values in timestamp column."""
-	timestamps = [datetime(2023, 1, i) if i % 5 != 0 else None for i in range(1, 21)]
-	return pl.DataFrame(
-		{
-			"timestamp": timestamps,
 			"value": [float(i * 10) for i in range(1, 21)],
 			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
 			"target": [float(i * 2 - 1) for i in range(1, 21)],
@@ -328,38 +348,12 @@ def df_invalid_no_datetime_col() -> pl.DataFrame:
 
 
 @pytest.fixture
-def df_invalid_no_numeric_col() -> pl.DataFrame:
-	"""DataFrame with no numeric columns at all."""
-	return pl.DataFrame(
-		{
-			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],
-			"name": [f"item_{i}" for i in range(1, 21)],
-			"category": [f"cat_{i % 3}" for i in range(1, 21)],
-			"description": [f"desc_{i}" for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
 def df_invalid_non_castable_timestamp() -> pl.DataFrame:
 	"""DataFrame with string timestamp column that cannot be cast to datetime."""
 	return pl.DataFrame(
 		{
 			"timestamp": [f"not_a_date_{i}" for i in range(1, 21)],
 			"value": [float(i * 10) for i in range(1, 21)],
-			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	)
-
-
-@pytest.fixture
-def df_invalid_non_castable_value() -> pl.DataFrame:
-	"""DataFrame with string value column that cannot be cast to numeric."""
-	return pl.DataFrame(
-		{
-			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],
-			"value": [f"not_a_number_{i}" for i in range(1, 21)],
 			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
 			"target": [float(i * 2 - 1) for i in range(1, 21)],
 		}
@@ -377,34 +371,3 @@ def df_invalid_missing_specified_col() -> pl.DataFrame:
 			"target": [float(i * 2 - 1) for i in range(1, 21)],
 		}
 	)
-
-
-# =============================================================================
-# LAZYFRAME VARIANTS
-# =============================================================================
-
-
-@pytest.fixture
-def lf_unclean_timestamp_str() -> pl.LazyFrame:
-	"""LazyFrame with string timestamp that needs casting."""
-	return pl.DataFrame(
-		{
-			"timestamp": [f"2023-01-{i:02d}" for i in range(1, 21)],
-			"value": [float(i * 10) for i in range(1, 21)],
-			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	).lazy()
-
-
-@pytest.fixture
-def lf_unclean_value_str() -> pl.LazyFrame:
-	"""LazyFrame with string value that needs casting."""
-	return pl.DataFrame(
-		{
-			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],
-			"value": [str(float(i * 10)) for i in range(1, 21)],
-			"measurement": [float(i * 5 + 3) for i in range(1, 21)],
-			"target": [float(i * 2 - 1) for i in range(1, 21)],
-		}
-	).lazy()

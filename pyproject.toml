@@ -1,6 +1,6 @@
 [project]
 name = "polars-timeseries-utils"
-version = "0.1.0"
+version = "0.1.2"
 description = "Library with utility functions for Polars DataFrames, similar to scikit-learn & pandas functionalities."
 readme = "README.md"
 authors = [
@@ -14,6 +14,12 @@ dependencies = [
     "pyarrow>=22.0.0",
     "pytest>=9.0.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/LeonDavidZipp/polars-timeseries-utils"
+Repository = "https://github.com/LeonDavidZipp/polars-timeseries-utils"
+Issues = "https://github.com/LeonDavidZipp/polars-timeseries-utils/issues"
+Documentation = "https://github.com/LeonDavidZipp/polars-timeseries-utils/#readme"
 
 [build-system]
 requires = ["hatchling"]
