@@ -4,7 +4,6 @@ import polars as pl
 from polars.datatypes.group import DATETIME_DTYPES
 
 from .frequency import periods_to_relativedelta
-from .timestamp import cast_to_datetime_raises_if_error
 from .types import TIMESTAMP_COLUMNS, Frequency
 
 
@@ -117,7 +116,7 @@ def handle_timestamp_column_raises_if_error(
 					try:
 						df = df.with_columns(
 							cast_to_datetime_raises_if_error(
-								df.select(ts_col).to_series()  # type: ignore
+								df.select(ts_col).lazy().collect().to_series()
 							)
 						)
 						col = ts_col
@@ -130,7 +129,9 @@ def handle_timestamp_column_raises_if_error(
 			elif dtype == pl.String:
 				try:
 					df = df.with_columns(
-						cast_to_datetime_raises_if_error(df.select(ts_col).to_series())  # type: ignore
+						cast_to_datetime_raises_if_error(
+							df.select(ts_col).lazy().collect().to_series()
+						)
 					)
 					col = ts_col
 					break
