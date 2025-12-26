@@ -1,0 +1,23 @@
+[project]
+name = "polars-utils"
+version = "0.1.0"
+description = "Library with utility functions for Polars DataFrames, similar to scikit-learn & pandas functionalities."
+readme = "README.md"
+authors = [
+    { name = "Leon David Zipp", email = "leondavidzipp@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.4.0",
+    "pandas>=2.3.3",
+    "polars>=1.36.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+]
