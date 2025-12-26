@@ -1,6 +1,6 @@
 import polars as pl
 
-from ..column_transformer import RollingStrategy
+from ..column_transformer.types import RollingStrategy
 
 
 def rolling_zscore(
@@ -19,7 +19,7 @@ def rolling_zscore(
 	Calculate the rolling z-score of a Polars Series.
 
 	Args:
-		df (pl.DataFrame | pl.LazyFrame): The input series.
+		df (pl.DataFrame | pl.LazyFrame): The input DataFrame.
 		col (str): The name of the column to calculate the z-score for.
 		window_size (int): The size of the rolling window.
 		min_samples (int): The minimum number of samples required in the window to compute the statistics.
