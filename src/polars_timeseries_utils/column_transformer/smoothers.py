@@ -24,8 +24,10 @@ class Smoother(BaseColumnTransformer):
 	):
 		"""
 		Args:
-			max_zscore (float): The maximum z-score threshold to identify outliers. Defaults to 3.0.
-			zero_threshold (float): The threshold below which MAD is considered zero. Defaults to 1e-5.
+			max_zscore (float): The maximum z-score threshold to identify outliers.
+				Defaults to 3.0.
+			zero_threshold (float): The threshold below which MAD is considered zero.
+				Defaults to 1e-5.
 			fill_value (float): The value to replace zero MADs with. Defaults to 1e-4.
 		"""
 
@@ -47,7 +49,8 @@ class Smoother(BaseColumnTransformer):
 		self.is_fitted = self.median is not None and mad is not None
 		if not self.is_fitted:
 			raise RuntimeError(
-				f"{self.__class__.__name__} could not be fitted due to None median or mad values."
+				f"{self.__class__.__name__} could not be fitted due to None median or"
+				" mad values."
 			)
 
 		return self
@@ -80,11 +83,13 @@ class Smoother(BaseColumnTransformer):
 
 class RollingSmoother(BaseColumnTransformer):
 	"""
-	A class to smooth outliers in a Polars Series using a rolling median and MAD approach.
+	A class to smooth outliers in a Polars Series using a rolling median and MAD
+	approach.
 
 	Attributes:
 		window_size (int): The size of the rolling window.
-		min_samples (int): The minimum number of samples required in the window to compute the statistics.
+		min_samples (int): The minimum number of samples required in the window to
+			compute the statistics.
 		max_zscore (float): The maximum z-score threshold to identify outliers.
 		center (bool): Whether to set the labels at the center of the window.
 	"""
@@ -101,11 +106,15 @@ class RollingSmoother(BaseColumnTransformer):
 		"""
 		Args:
 			window_size (int): The size of the rolling window.
-			min_samples (int | None): The minimum number of samples required in the window to compute the statistics. Defaults to 1.
-			max_zscore (float): The maximum z-score threshold to identify outliers. Defaults to 3.0.
-			zero_threshold (float): The threshold below which MAD is considered zero. Defaults to 1e-5.
+			min_samples (int | None): The minimum number of samples required in the
+				window to compute the statistics. Defaults to 1.
+			max_zscore (float): The maximum z-score threshold to identify outliers.
+				Defaults to 3.0.
+			zero_threshold (float): The threshold below which MAD is considered zero.
+				Defaults to 1e-5.
 			fill_value (float): The value to replace zero MADs with. Defaults to 1e-4.
-			center (bool): Whether to set the labels at the center of the window. Default is False, because it is safe for time series data.
+			center (bool): Whether to set the labels at the center of the window.
+				Default is False, because it is safe for time series data.
 		"""
 
 		self.window_size = window_size

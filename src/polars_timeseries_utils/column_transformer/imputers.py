@@ -26,7 +26,8 @@ class Imputer(BaseColumnTransformer):
 		Initialize the imputer with a value or strategy.
 
 		Args:
-			value: The value to replace missing values with. If provided, 'strategy' must be None.
+			value: The value to replace missing values with. If provided, 'strategy'
+				must be None.
 			strategy: The imputation strategy to use. If provided, 'value' must be None.
 		"""
 
@@ -81,7 +82,8 @@ class Imputer(BaseColumnTransformer):
 		)
 		if not self.is_fitted:
 			raise RuntimeError(
-				f"{self.__class__.__name__} could not be fitted with strategy {self.strategy}."
+				f"{self.__class__.__name__} could not be fitted with strategy"
+				f" {self.strategy}."
 			)
 
 		return self
@@ -118,8 +120,10 @@ class RollingImputer(BaseColumnTransformer):
 		strategy (Literal): The rolling statistic to use ('rolling_min', 'rolling_max',
 			'rolling_mean', 'rolling_median').
 		window_size (int): The size of the rolling window.
-		weights (list[float] | None): The weights for the rolling mean. Only used if strategy is 'rolling_mean'.
-		min_samples (int | None): The minimum number of samples required in the window to compute the statistic.
+		weights (list[float] | None): The weights for the rolling mean. Only used if
+			strategy is 'rolling_mean'.
+		min_samples (int | None): The minimum number of samples required in the window
+			to compute the statistic.
 			If None, it defaults to window_size.
 		center (bool): Whether to set the labels at the center of the window.
 	"""

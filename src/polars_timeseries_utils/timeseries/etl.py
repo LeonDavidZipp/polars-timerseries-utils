@@ -12,7 +12,8 @@ def clean_timeseries_df(
 	round: int = 2,
 ) -> pl.DataFrame | pl.LazyFrame:
 	"""
-	Cleans the time series DataFrame by sorting, removing duplicates, and handling missing values.
+	Cleans the time series DataFrame by sorting, removing duplicates, and handling
+	missing values.
 
 	Args:
 		df (pl.DataFrame | pl.LazyFrame): The input time series DataFrame.

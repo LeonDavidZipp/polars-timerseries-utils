@@ -10,7 +10,10 @@ import pytest
 
 @pytest.fixture
 def df_clean() -> pl.DataFrame:
-	"""Clean DataFrame with datetime timestamp column named 'timestamp' and numeric columns."""
+	"""
+	Clean DataFrame with datetime timestamp column named 'timestamp' and numeric
+	columns.
+	"""
 	return pl.DataFrame(
 		{
 			"timestamp": [datetime(2023, 1, i) for i in range(1, 21)],

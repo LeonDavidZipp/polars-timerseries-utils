@@ -31,7 +31,8 @@ class MinMaxScaler(BaseColumnTransformer):
 		self.is_fitted = self.min is not None and self.max is not None
 		if not self.is_fitted:
 			raise RuntimeError(
-				f"{self.__class__.__name__} could not be fitted due to None min or max values."
+				f"{self.__class__.__name__} could not be fitted due to None min or"
+				" max values."
 			)
 
 		return self
@@ -72,7 +73,8 @@ class StandardScaler(BaseColumnTransformer):
 		self.is_fitted = self.mean is not None and self.std is not None
 		if not self.is_fitted:
 			raise RuntimeError(
-				f"{self.__class__.__name__} could not be fitted due to None mean or std values."
+				f"{self.__class__.__name__} could not be fitted due to None mean or"
+				" std values."
 			)
 
 		return self

@@ -18,10 +18,12 @@ class ColumnTransformerMetadata:
 
 class MultiColumnTransformer(BaseMultiColumnTransformer):
 	"""
-	A simple column transformer for applying a sequence of transformations to a Polars DataFrame.
+	A simple column transformer for applying a sequence of transformations to a
+	Polars DataFrame.
 
 	Attributes:
-		transformers (list[BaseColumnTransformer]): A list of column transformers to apply.
+		transformers (list[BaseColumnTransformer]): A list of column transformers to
+			apply.
 	"""
 
 	def __init__(self, transformers: list[ColumnTransformerMetadata]) -> None:
@@ -115,7 +117,8 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 			df (pl.DataFrame | pl.LazyFrame): The input Polars DataFrame or LazyFrame.
 
 		Returns:
-			pl.DataFrame | pl.LazyFrame: The fitted and transformed DataFrame or LazyFrame.
+			pl.DataFrame | pl.LazyFrame: The fitted and transformed DataFrame or
+				LazyFrame.
 		"""
 
 		return self.fit(df).transform(df)

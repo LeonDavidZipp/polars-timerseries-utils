@@ -32,7 +32,8 @@ class TestMultiColumnTransformer:
 		"""Test initialization with no transformers."""
 		with pytest.raises(
 			ValueError,
-			match=f"{MultiColumnTransformer.__name__} must have at least one transformer.",
+			match=f"{MultiColumnTransformer.__name__} must have at"
+			" least one transformer.",
 		):
 			MultiColumnTransformer([])
 

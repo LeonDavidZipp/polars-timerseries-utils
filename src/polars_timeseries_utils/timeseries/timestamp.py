@@ -64,8 +64,8 @@ def cast_to_datetime_raises_if_error(s: pl.Series) -> pl.Series:
 		column (str): The column name to cast.
 
 	Returns:
-		pl.DataFrame: The DataFrame with the specified column cast to datetime if successful,
-			else returns the original DataFrame.
+		pl.DataFrame: The DataFrame with the specified column cast to datetime if
+			successful, else returns the original DataFrame.
 	"""
 
 	datetime_formats = [

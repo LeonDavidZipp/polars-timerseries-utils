@@ -22,16 +22,20 @@ def rolling_zscore(
 		df (pl.DataFrame | pl.LazyFrame): The input DataFrame.
 		col (str): The name of the column to calculate the z-score for.
 		window_size (int): The size of the rolling window.
-		min_samples (int): The minimum number of samples required in the window to compute the statistics.
+		min_samples (int): The minimum number of samples required in the window to
+			compute the statistics.
 		center (bool): Whether to set the labels at the center of the window.
 		zero_threshold (float): The threshold below which MAD is considered zero.
 		fill_value (float): The value to replace zero MADs with.
 		alias (str): The name of the output z-score column.
-		with_median (str | None): If provided, include the rolling median column with this name in the output.
-		with_mad (str | None): If provided, include the rolling MAD column with this name in the output.
+		with_median (str | None): If provided, include the rolling median column with
+			this name in the output.
+		with_mad (str | None): If provided, include the rolling MAD column with this
+			name in the output.
 
 	Returns:
-		pl.DataFrame | pl.LazyFrame: The DataFrame with the rolling z-score column added.
+		pl.DataFrame | pl.LazyFrame: The DataFrame with the rolling z-score column
+			added.
 	"""
 
 	mad = "mad"
