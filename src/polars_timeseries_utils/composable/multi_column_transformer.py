@@ -10,7 +10,7 @@ from .base import BaseMultiColumnTransformer
 
 
 @dataclass
-class TransformerData:
+class ColumnTransformerMetadata:
 	name: str
 	columns: list[str] | list[pl.DataType] | None
 	transformer: BaseColumnTransformer
@@ -24,7 +24,7 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 		transformers (list[BaseColumnTransformer]): A list of column transformers to apply.
 	"""
 
-	def __init__(self, transformers: list[TransformerData]) -> None:
+	def __init__(self, transformers: list[ColumnTransformerMetadata]) -> None:
 		"""
 		Initializes the ColumnTransformer with a list of transformers.
 
@@ -32,9 +32,14 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 			transformers (list[Transformer]): A list of column transformers to apply.
 		"""
 
+		if not transformers:
+			raise ValueError(
+				f"{self.__class__.__name__} must have at least one transformer."
+			)
+
 		self.transformers = transformers
 		self.col_to_transformer: dict[str, BaseColumnTransformer] = {}
-		self.is_fitted = False
+		super().__init__()
 
 	def fit(self, df: pl.DataFrame | pl.LazyFrame) -> Self:
 		"""
@@ -47,7 +52,6 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 			ColumnTransformer: The fitted column transformer.
 		"""
 
-		print(f"df before fitting: {df.head(5)}")
 		self.col_to_transformer = {
 			col: deepcopy(transformer.transformer)
 			for transformer in self.transformers
@@ -57,12 +61,17 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 			.names()
 		}
 
-		_ = df.with_columns(
-			[
-				pl.col(col).map_batches(tf.fit_transform)
-				for col, tf in self.col_to_transformer.items()
-			]
+		_ = (
+			df.lazy()
+			.collect()
+			.with_columns(
+				[
+					pl.col(col).map_batches(tf.fit_transform)
+					for col, tf in self.col_to_transformer.items()
+				]
+			)
 		)
+
 		self.is_fitted = True
 
 		return self
@@ -94,8 +103,6 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 			]
 		)
 
-		print("after transform:", df.select(cols).head(5))
-
 		return df.select(cols)
 
 	def fit_transform(
@@ -124,12 +131,17 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 		return self.col_to_transformer.get(col)
 
 	@staticmethod
-	def col_selector(tf: TransformerData) -> cs.Selector:
+	def col_selector(tf: ColumnTransformerMetadata) -> cs.Selector:
 		if tf.columns is None:
 			return cs.all()
 		elif all(isinstance(col, str) for col in tf.columns):
 			return cs.by_name(cast(list[str], tf.columns))
-		elif all(isinstance(col, pl.DataType) for col in tf.columns):
-			return cs.by_dtype(cast(list[pl.DataType], tf.columns))
+		elif all(
+			isinstance(col, pl.DataType)
+			or (isinstance(col, type) and issubclass(col, pl.DataType))
+			for col in tf.columns
+		):
+			dtypes = [col() if isinstance(col, type) else col for col in tf.columns]
+			return cs.by_dtype(dtypes)  # type: ignore
 		else:
 			raise ValueError("Transformer columns must be all str or all pl.DataType.")

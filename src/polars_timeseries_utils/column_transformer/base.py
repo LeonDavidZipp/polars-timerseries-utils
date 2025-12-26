@@ -9,6 +9,9 @@ class BaseColumnTransformer(ABC):
 	Base class for all column transformers.
 	"""
 
+	def __init__(self) -> None:
+		self.is_fitted = False
+
 	@abstractmethod
 	def fit(self, s: pl.Series) -> Self:
 		"""

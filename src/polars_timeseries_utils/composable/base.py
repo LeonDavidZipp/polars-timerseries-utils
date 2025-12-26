@@ -5,6 +5,9 @@ import polars as pl
 
 
 class BaseMultiColumnTransformer(ABC):
+	def __init__(self) -> None:
+		self.is_fitted = False
+
 	@abstractmethod
 	def fit(self, df: pl.DataFrame | pl.LazyFrame) -> Self:
 		"""

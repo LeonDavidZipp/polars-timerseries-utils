@@ -22,16 +22,23 @@ class MinMaxScaler(BaseColumnTransformer):
 
 		self.min: PythonLiteral | None = None
 		self.max: PythonLiteral | None = None
+		super().__init__()
 
 	def fit(self, s: pl.Series) -> Self:
 		self.min = s.min()
 		self.max = s.max()
-		print(f"Fitted MinMaxScaler with min: {self.min}, max: {self.max}")
+
+		self.is_fitted = self.min is not None and self.max is not None
+		if not self.is_fitted:
+			raise RuntimeError(
+				f"{self.__class__.__name__} could not be fitted due to None min or max values."
+			)
+
 		return self
 
 	def transform(self, s: pl.Series) -> pl.Series:
-		if not all([self.min is not None, self.max is not None]):
-			raise ValueError("MinMaxScaler has not been fitted yet.")
+		if not self.is_fitted:
+			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
 		temp_df = pl.DataFrame({s.name: s}).with_columns(
 			pl.when(pl.col(s.name).is_null())
@@ -40,7 +47,7 @@ class MinMaxScaler(BaseColumnTransformer):
 			.cast(s.dtype)
 			.alias(s.name)
 		)
-		print(f"Transformed series with MinMaxScaler: {temp_df.head(5)}")
+
 		return temp_df.select(s.name).to_series()
 
 
@@ -56,15 +63,23 @@ class StandardScaler(BaseColumnTransformer):
 
 		self.mean: PythonLiteral | None = None
 		self.std: PythonLiteral | None = None
+		super().__init__()
 
 	def fit(self, s: pl.Series) -> Self:
 		self.mean = s.mean()
 		self.std = s.std()
+
+		self.is_fitted = self.mean is not None and self.std is not None
+		if not self.is_fitted:
+			raise RuntimeError(
+				f"{self.__class__.__name__} could not be fitted due to None mean or std values."
+			)
+
 		return self
 
 	def transform(self, s: pl.Series) -> pl.Series:
-		if not all([self.mean is not None, self.std is not None]):
-			raise ValueError("StandardScaler has not been fitted yet.")
+		if not self.is_fitted:
+			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
 		temp_df = pl.DataFrame({s.name: s}).with_columns(
 			((pl.col(s.name) - self.mean) / self.std).cast(s.dtype).alias(s.name)

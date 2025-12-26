@@ -3,6 +3,7 @@ from typing import Self, override
 import polars as pl
 from polars._typing import PythonLiteral
 
+from ..metrics import rolling_zscore
 from .base import BaseColumnTransformer
 from .types import RollingStrategy
 
@@ -33,20 +34,28 @@ class Smoother(BaseColumnTransformer):
 		self.fill_value = fill_value
 		self.median: PythonLiteral | None = None
 		self.mad: PythonLiteral | None = None
+		super().__init__()
 
 	@override
 	def fit(self, s: pl.Series) -> Self:
 		self.median = s.median()
-		mad = (s - self.median).abs().median() or 0
+		mad = (s - self.median).abs().median()
 		if mad < self.zero_threshold:  # type: ignore
 			mad = self.fill_value
 		self.mad = mad
+
+		self.is_fitted = self.median is not None and mad is not None
+		if not self.is_fitted:
+			raise RuntimeError(
+				f"{self.__class__.__name__} could not be fitted due to None median or mad values."
+			)
+
 		return self
 
 	@override
 	def transform(self, s: pl.Series) -> pl.Series:
-		if not all([self.median is not None, self.mad is not None]):
-			raise ValueError(f"{self.__class__.__name__} has not been fit yet.")
+		if not self.is_fitted:
+			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
 		z_score = "z_score"
 		temp_df = (
@@ -67,71 +76,6 @@ class Smoother(BaseColumnTransformer):
 			)
 		)
 		return temp_df.select(s.name).to_series()
-
-
-def rolling_zscore(
-	df: pl.DataFrame | pl.LazyFrame,
-	col: str,
-	window_size: int,
-	min_samples: int = 1,
-	center: bool = False,
-	zero_threshold: float = 1e-5,
-	fill_value: float = 1e-4,
-	alias: str = "z_score",
-	with_median: RollingStrategy | None = None,
-	with_mad: str | None = None,
-) -> pl.DataFrame | pl.LazyFrame:
-	"""
-	Calculate the rolling z-score of a Polars Series.
-
-	Args:
-		df (pl.DataFrame | pl.LazyFrame): The input series.
-		col (str): The name of the column to calculate the z-score for.
-		window_size (int): The size of the rolling window.
-		min_samples (int): The minimum number of samples required in the window to compute the statistics.
-		center (bool): Whether to set the labels at the center of the window.
-		zero_threshold (float): The threshold below which MAD is considered zero.
-		fill_value (float): The value to replace zero MADs with.
-		alias (str): The name of the output z-score column.
-		with_median (str | None): If provided, include the rolling median column with this name in the output.
-		with_mad (str | None): If provided, include the rolling MAD column with this name in the output.
-
-	Returns:
-		pl.DataFrame | pl.LazyFrame: The DataFrame with the rolling z-score column added.
-	"""
-
-	mad = "mad"
-	cols = (
-		df.collect_schema().names()
-		+ [alias]
-		+ ([with_median] if with_median else [])
-		+ ([with_mad] if with_mad else [])
-	)
-	with_median = with_median if with_median else RollingStrategy.MEDIAN
-	return (
-		df.with_columns(
-			pl.col(col)
-			.rolling_median(window_size, min_samples=min_samples, center=center)
-			.alias(with_median)
-		)
-		.with_columns(
-			(pl.col(col) - pl.col(with_median))
-			.abs()
-			.rolling_median(window_size, min_samples=min_samples, center=center)
-			.alias(mad)
-		)
-		.with_columns(
-			pl.when(pl.col(mad).is_between(-zero_threshold, zero_threshold))
-			.then(fill_value)
-			.otherwise(pl.col(mad))
-		)
-		.with_columns(
-			((pl.col(col) - pl.col(with_median)) / (pl.col(mad) * 1.4826 + 1e-8)).alias(
-				alias
-			)
-		)
-		.select(cols)
-	)
 
 
 class RollingSmoother(BaseColumnTransformer):
@@ -170,6 +114,7 @@ class RollingSmoother(BaseColumnTransformer):
 		self.zero_threshold = zero_threshold
 		self.fill_value = fill_value
 		self.center = center
+		self.is_fitted = True
 
 	@override
 	def fit(self, s: pl.Series) -> Self:
@@ -183,10 +128,15 @@ class RollingSmoother(BaseColumnTransformer):
 			Self: The fitted smoother.
 		"""
 
+		self.is_fitted = True
+
 		return self
 
 	@override
 	def transform(self, s: pl.Series) -> pl.Series:
+		if not self.is_fitted:
+			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
+
 		mad = "mad"
 		z_score = "z_score"
 		temp_df = rolling_zscore(
@@ -209,4 +159,5 @@ class RollingSmoother(BaseColumnTransformer):
 			.cast(s.dtype)
 			.alias(s.name)
 		)
+
 		return temp_df.select(s.name).lazy().collect().to_series()
