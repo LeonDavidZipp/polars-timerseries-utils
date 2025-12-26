@@ -1,8 +1,8 @@
 [project]
 name = "polars-timeseries-utils"
-version = "0.1.3"
+version = "0.1.2"
 description = "Library with utility functions for Polars DataFrames, similar to scikit-learn & pandas functionalities."
-readme = "README.md"
+readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
     { name = "Leon David Zipp", email = "leondavidzipp@proton.me" }
 ]
