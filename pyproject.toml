@@ -1,6 +1,6 @@
 [project]
 name = "polars-timeseries-utils"
-version = "0.1.2"
+version = "0.1.3"
 description = "Library with utility functions for Polars DataFrames, similar to scikit-learn & pandas functionalities."
 readme = "README.md"
 authors = [
