@@ -77,9 +77,6 @@ class Imputer(BaseColumnTransformer):
 				),
 			]
 		)
-		print(
-			f"{self.value=}, {self.strategy=}, {self.fitted_value=}, {self.is_fitted=}"
-		)
 		if not self.is_fitted:
 			raise RuntimeError(
 				f"{self.__class__.__name__} could not be fitted with strategy"
