@@ -52,3 +52,20 @@ class BaseColumnTransformer(ABC):
 		"""
 
 		return self.fit(s).transform(s)
+
+	@abstractmethod
+	def inverse_transform(self, s: pl.Series) -> pl.Series:
+		"""
+		Inverse transform the data back to original scale.
+
+		Args:
+			s (pl.Series): The transformed series to inverse transform.
+
+		Returns:
+			pl.Series: The inverse transformed series.
+
+		Raises:
+			NotImplementedError: If the transformer does not support inverse transform.
+		"""
+
+		...
