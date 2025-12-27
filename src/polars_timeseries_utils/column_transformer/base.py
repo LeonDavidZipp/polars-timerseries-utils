@@ -53,19 +53,23 @@ class BaseColumnTransformer(ABC):
 
 		return self.fit(s).transform(s)
 
+
+class InverseTransformerMixin(ABC):
+	"""Base class for transformers that reverse transformations."""
+
+	def __init__(self) -> None:
+		self.is_fitted = False
+
 	@abstractmethod
 	def inverse_transform(self, s: pl.Series) -> pl.Series:
 		"""
 		Inverse transform the data back to original scale.
 
 		Args:
-			s (pl.Series): The transformed series to inverse transform.
+			s (pl.Series): The transformed series to reverse transform.
 
 		Returns:
-			pl.Series: The inverse transformed series.
-
-		Raises:
-			NotImplementedError: If the transformer does not support inverse transform.
+			pl.Series: The reverse transformed series.
 		"""
 
 		...
