@@ -36,8 +36,8 @@ class TestSmoother:
 
 		# Original has extreme values 100.0 and -50.0
 		# After smoothing, values should be closer to the median
-		assert result.max() < 100.0
-		assert result.min() > -50.0
+		assert result.max() < 100.0  # type: ignore
+		assert result.min() > -50.0  # type: ignore
 
 	def test_normal_data_unchanged(self, series_normal_distribution: pl.Series) -> None:
 		"""Test that normal data is mostly unchanged."""
@@ -46,7 +46,7 @@ class TestSmoother:
 
 		# Values should be close to original for normal distribution
 		for i in range(len(result)):
-			assert result[i] == pytest.approx(series_normal_distribution[i], abs=1.0)
+			assert result[i] == pytest.approx(series_normal_distribution[i], abs=1.0)  # type: ignore
 
 	def test_transform_without_fit_raises(
 		self, series_with_outliers: pl.Series
@@ -101,8 +101,8 @@ class TestRollingSmoother:
 		result = smoother.fit_transform(series_with_outliers)
 
 		# Check that extreme outliers are moderated
-		assert result.max() < 100.0
-		assert result.min() > -50.0
+		assert result.max() < 100.0  # type: ignore
+		assert result.min() > -50.0  # type: ignore
 
 	def test_preserves_dtype(self, series_with_outliers: pl.Series) -> None:
 		"""Test that the original dtype is preserved."""
@@ -135,4 +135,4 @@ class TestRollingSmoother:
 
 		# Values should be close to original for normal distribution
 		for i in range(len(result)):
-			assert result[i] == pytest.approx(series_normal_distribution[i], abs=2.0)
+			assert result[i] == pytest.approx(series_normal_distribution[i], abs=2.0)  # type: ignore
