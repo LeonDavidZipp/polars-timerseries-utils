@@ -12,7 +12,7 @@ def rolling_zscore(
 	zero_threshold: float = 1e-5,
 	fill_value: float = 1e-4,
 	alias: str = "z_score",
-	with_median: RollingStrategy | None = None,
+	with_median: str | None = None,
 	with_mad: str | None = None,
 ) -> pl.DataFrame | pl.LazyFrame:
 	"""
