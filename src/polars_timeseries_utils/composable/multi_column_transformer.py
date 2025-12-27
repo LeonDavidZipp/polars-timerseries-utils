@@ -4,6 +4,7 @@ from typing import Self, cast
 
 import polars as pl
 import polars.selectors as cs
+from polars._typing import PolarsDataType
 
 from ..column_transformer import BaseColumnTransformer
 from .base import BaseMultiColumnTransformer
@@ -12,8 +13,8 @@ from .base import BaseMultiColumnTransformer
 @dataclass
 class ColumnTransformerMetadata:
 	name: str
-	columns: list[str] | list[pl.DataType] | None
 	transformer: BaseColumnTransformer
+	columns: list[str] | list[PolarsDataType] | pl.Expr | cs.Selector | None = None
 
 
 class MultiColumnTransformer(BaseMultiColumnTransformer):
@@ -134,9 +135,11 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 		return self.col_to_transformer.get(col)
 
 	@staticmethod
-	def col_selector(tf: ColumnTransformerMetadata) -> cs.Selector:
+	def col_selector(tf: ColumnTransformerMetadata) -> pl.Expr | cs.Selector:
 		if tf.columns is None:
 			return cs.all()
+		elif isinstance(tf.columns, (pl.Expr, cs.Selector)):
+			return tf.columns
 		elif all(isinstance(col, str) for col in tf.columns):
 			return cs.by_name(cast(list[str], tf.columns))
 		elif all(
@@ -147,4 +150,7 @@ class MultiColumnTransformer(BaseMultiColumnTransformer):
 			dtypes = [col() if isinstance(col, type) else col for col in tf.columns]
 			return cs.by_dtype(dtypes)  # type: ignore
 		else:
-			raise ValueError("Transformer columns must be all str or all pl.DataType.")
+			raise ValueError(
+				"Transformer columns must be all list[str] | list[pl.DataType]"
+				" | pl.Expr | cs.Selector | None."
+			)
