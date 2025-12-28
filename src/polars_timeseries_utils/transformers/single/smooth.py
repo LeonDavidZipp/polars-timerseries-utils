@@ -3,7 +3,7 @@ from typing import Self, override
 import polars as pl
 from polars._typing import PythonLiteral
 
-from ..metrics import rolling_zscore
+from ...stats import rolling_zscore_df
 from .base import BaseColumnTransformer
 from .types import RollingStrategy
 
@@ -62,7 +62,7 @@ class Smoother(BaseColumnTransformer):
 
 		z_score = "z_score"
 		temp_df = (
-			pl.DataFrame({s.name: s})
+			s.to_frame()
 			.with_columns(
 				((pl.col(s.name) - self.median) / (self.mad * 1.4826 + 1e-8)).alias(  # type: ignore
 					z_score
@@ -148,7 +148,7 @@ class RollingSmoother(BaseColumnTransformer):
 
 		mad = "mad"
 		z_score = "z_score"
-		temp_df = rolling_zscore(
+		temp_df = rolling_zscore_df(
 			df=pl.LazyFrame({s.name: s}),
 			col=s.name,
 			window_size=self.window_size,

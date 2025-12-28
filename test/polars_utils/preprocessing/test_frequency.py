@@ -4,7 +4,7 @@ import polars as pl
 import pytest
 from dateutil.relativedelta import relativedelta
 
-from src.polars_timeseries_utils.timeseries.frequency import (
+from src.polars_timeseries_utils.preprocessing.frequency import (
 	Frequency,
 	determine_frequency,
 	frequency_to_interval,

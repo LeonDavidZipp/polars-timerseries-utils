@@ -3,7 +3,7 @@ from datetime import datetime
 import polars as pl
 import pytest
 
-from src.polars_timeseries_utils.timeseries.timestamp import (
+from src.polars_timeseries_utils.preprocessing.timestamp import (
 	Frequency,
 	cast_to_datetime_raises_if_error,
 	handle_timestamp_column_raises_if_error,
