@@ -43,7 +43,7 @@ class MinMaxScaler(BaseColumnTransformer, InverseTransformerMixin):
 		if not self.is_fitted:
 			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
-		temp_df = pl.DataFrame({s.name: s}).with_columns(
+		temp_df = s.to_frame().with_columns(
 			pl.when(pl.col(s.name).is_null())
 			.then(None)
 			.otherwise((pl.col(s.name) - self.min) / (self.max - self.min + 1e-8))  # type: ignore
@@ -68,7 +68,7 @@ class MinMaxScaler(BaseColumnTransformer, InverseTransformerMixin):
 		if not self.is_fitted:
 			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
-		temp_df = pl.DataFrame({s.name: s}).with_columns(
+		temp_df = s.to_frame().with_columns(
 			pl.when(pl.col(s.name).is_null())
 			.then(None)
 			.otherwise(pl.col(s.name) * (self.max - self.min + 1e-8) + self.min)  # type: ignore
@@ -112,7 +112,7 @@ class StandardScaler(BaseColumnTransformer, InverseTransformerMixin):
 		if not self.is_fitted:
 			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
-		temp_df = pl.DataFrame({s.name: s}).with_columns(
+		temp_df = s.to_frame().with_columns(
 			((pl.col(s.name) - self.mean) / self.std).cast(s.dtype).alias(s.name)
 		)
 		return temp_df.select(s.name).to_series()
@@ -132,7 +132,7 @@ class StandardScaler(BaseColumnTransformer, InverseTransformerMixin):
 		if not self.is_fitted:
 			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
-		temp_df = pl.DataFrame({s.name: s}).with_columns(
+		temp_df = s.to_frame().with_columns(
 			(pl.col(s.name) * self.std + self.mean).cast(s.dtype).alias(s.name)
 		)
 		return temp_df.select(s.name).to_series()
@@ -198,7 +198,7 @@ class RobustScaler(BaseColumnTransformer, InverseTransformerMixin):
 		if not self.is_fitted:
 			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
-		temp_df = pl.DataFrame({s.name: s}).with_columns(
+		temp_df = s.to_frame().with_columns(
 			pl.when(pl.col(s.name).is_null())
 			.then(None)
 			.otherwise((pl.col(s.name) - self.median) / (self.iqr + 1e-8))  # type: ignore
@@ -223,7 +223,7 @@ class RobustScaler(BaseColumnTransformer, InverseTransformerMixin):
 		if not self.is_fitted:
 			raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
 
-		temp_df = pl.DataFrame({s.name: s}).with_columns(
+		temp_df = s.to_frame().with_columns(
 			pl.when(pl.col(s.name).is_null())
 			.then(None)
 			.otherwise(pl.col(s.name) * (self.iqr + 1e-8) + self.median)  # type: ignore

@@ -92,17 +92,17 @@ class Imputer(BaseColumnTransformer):
 
 		if self.value is not None:
 			fill_val = self.value
-			temp_df = pl.DataFrame({s.name: s}).with_columns(
+			temp_df = s.to_frame().with_columns(
 				pl.col(s.name).fill_null(value=fill_val)
 			)
 		elif self.strategy in [Strategy.FORWARD, Strategy.BACKWARD]:
-			temp_df = pl.DataFrame({s.name: s}).with_columns(
+			temp_df = s.to_frame().with_columns(
 				pl.col(s.name).fill_null(strategy=self.strategy)  # type: ignore
 			)
 		else:
 			if self.fitted_value is None:
 				raise ValueError(f"{self.__class__.__name__} has not been fitted yet.")
-			temp_df = pl.DataFrame({s.name: s}).with_columns(
+			temp_df = s.to_frame().with_columns(
 				pl.col(s.name).fill_null(value=self.fitted_value)
 			)
 
