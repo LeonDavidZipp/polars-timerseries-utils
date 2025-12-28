@@ -1,14 +1,13 @@
 import polars as pl
+import polars.selectors as cs
 import pytest
 
-from polars_timeseries_utils.column_transformer import Imputer, MinMaxScaler
-from polars_timeseries_utils.column_transformer.types import Strategy
-from polars_timeseries_utils.composable import (
+from polars_timeseries_utils.transformers.composable import (
 	ColumnTransformerMetadata,
 	MultiColumnTransformer,
-	MultiColumnTransformerMetadata,
-	Pipeline,
 )
+from polars_timeseries_utils.transformers.single import Imputer
+from polars_timeseries_utils.transformers.single.types import Strategy
 
 
 class TestMultiColumnTransformer:
@@ -67,8 +66,8 @@ class TestMultiColumnTransformer:
 		result = mct.fit_transform(df_multi_column)
 
 		# Check nulls are filled
-		assert result["col_a"].null_count() == 0
-		assert result["col_b"].null_count() == 0
+		assert result["col_a"].null_count() == 0  # type: ignore
+		assert result["col_b"].null_count() == 0  # type: ignore
 
 	def test_transform_without_fit_raises(self, df_multi_column: pl.DataFrame) -> None:
 		"""Test that transform without fit raises."""
@@ -110,7 +109,7 @@ class TestMultiColumnTransformer:
 		mct = MultiColumnTransformer(transformers)
 		result = mct.fit_transform(df_multi_column)
 
-		assert result.shape == df_multi_column.shape
+		assert result.shape == df_multi_column.shape  # type: ignore
 
 	def test_untransformed_columns_unchanged(
 		self, df_multi_column: pl.DataFrame
@@ -127,7 +126,7 @@ class TestMultiColumnTransformer:
 		result = mct.fit_transform(df_multi_column)
 
 		# col_c should be unchanged
-		assert result["col_c"].to_list() == df_multi_column["col_c"].to_list()
+		assert result["col_c"].to_list() == df_multi_column["col_c"].to_list()  # type: ignore
 
 	def test_by_dtype_selection(self, df_multi_column: pl.DataFrame) -> None:
 		"""Test selecting columns by dtype."""
@@ -187,127 +186,132 @@ class TestMultiColumnTransformer:
 		assert collected["col_b"].null_count() == 0
 
 
-class TestPipeline:
-	"""Tests for the Pipeline class."""
+class TestColSelector:
+	"""Tests for the MultiColumnTransformer.col_selector static method."""
 
-	def test_init(self) -> None:
-		"""Test initialization."""
-		step1 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="imputer",
-					columns=["col_a"],
-					transformer=Imputer(strategy=Strategy.MEAN),
-				)
-			]
+	def test_col_selector_none_returns_all(self) -> None:
+		"""Test that None columns returns cs.all() selector."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=None,
+			transformer=Imputer(strategy=Strategy.MEAN),
 		)
-		pipeline = Pipeline([step1])
+		selector = MultiColumnTransformer.col_selector(tf)
 
-		assert len(pipeline.steps) == 1
+		df = pl.DataFrame({"a": [1], "b": [2], "c": [3]})
+		selected = df.select(selector).columns
+		assert selected == ["a", "b", "c"]
 
-	def test_single_step(self, df_multi_column: pl.DataFrame) -> None:
-		"""Test pipeline with single step."""
-		step1 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="imputer",
-					columns=["col_a", "col_b"],
-					transformer=Imputer(strategy=Strategy.MEAN),
-				)
-			]
+	def test_col_selector_with_expr(self) -> None:
+		"""Test that pl.Expr is returned as-is."""
+		expr = pl.col("col_a")
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=expr,
+			transformer=Imputer(strategy=Strategy.MEAN),
 		)
-		steps = [MultiColumnTransformerMetadata(name="step1", transformer=step1)]
-		pipeline = Pipeline(steps)
-		result = pipeline.fit_transform(df_multi_column)
+		selector = MultiColumnTransformer.col_selector(tf)
 
-		assert result["col_a"].null_count() == 0
-		assert result["col_b"].null_count() == 0
+		assert selector is expr
 
-	def test_multi_step(self, df_multi_column: pl.DataFrame) -> None:
-		"""Test pipeline with multiple steps."""
-		step1 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="imputer",
-					columns=["col_a", "col_b"],
-					transformer=Imputer(strategy=Strategy.MEAN),
-				)
-			]
+	def test_col_selector_with_selector(self) -> None:
+		"""Test that cs.Selector is returned as-is."""
+		sel = cs.numeric()
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=sel,
+			transformer=Imputer(strategy=Strategy.MEAN),
 		)
-		step2 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="scaler",
-					columns=["col_c"],
-					transformer=MinMaxScaler(),
-				)
-			]
+		selector = MultiColumnTransformer.col_selector(tf)
+
+		assert selector is sel
+
+	def test_col_selector_with_string_list(self) -> None:
+		"""Test that list[str] returns cs.by_name() selector."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=["col_a", "col_b"],
+			transformer=Imputer(strategy=Strategy.MEAN),
 		)
-		steps = [
-			MultiColumnTransformerMetadata(name="step1", transformer=step1),
-			MultiColumnTransformerMetadata(name="step2", transformer=step2),
-		]
-		pipeline = Pipeline(steps)
-		result = pipeline.fit_transform(df_multi_column)
+		selector = MultiColumnTransformer.col_selector(tf)
 
-		# Check imputation happened
-		assert result["col_a"].null_count() == 0
-		assert result["col_b"].null_count() == 0
+		# Should select only the named columns
+		df = pl.DataFrame({"col_a": [1], "col_b": [2], "col_c": [3]})
+		selected = df.select(selector).columns
+		assert selected == ["col_a", "col_b"]
 
-		# Check scaling happened (col_c should be in [0, 1] range approximately)
-		assert result["col_c"].min() >= -0.1
-		assert result["col_c"].max() <= 1.1
-
-	def test_preserves_shape(self, df_multi_column: pl.DataFrame) -> None:
-		"""Test that shape is preserved through pipeline."""
-		step1 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="imputer",
-					columns=["col_a"],
-					transformer=Imputer(strategy=Strategy.MEAN),
-				)
-			]
+	def test_col_selector_with_dtype_list(self) -> None:
+		"""Test that list[pl.DataType] returns cs.by_dtype() selector."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=[pl.Float64],
+			transformer=Imputer(strategy=Strategy.MEAN),
 		)
-		steps = [MultiColumnTransformerMetadata(name="step1", transformer=step1)]
-		pipeline = Pipeline(steps)
-		result = pipeline.fit_transform(df_multi_column)
+		selector = MultiColumnTransformer.col_selector(tf)
 
-		assert result.shape == df_multi_column.shape
-
-	def test_preserves_columns(self, df_multi_column: pl.DataFrame) -> None:
-		"""Test that columns are preserved through pipeline."""
-		step1 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="imputer",
-					columns=["col_a"],
-					transformer=Imputer(strategy=Strategy.MEAN),
-				)
-			]
+		# Should select only Float64 columns
+		df = pl.DataFrame({"a": [1.0], "b": [2], "c": [3.0]}).cast(
+			{"a": pl.Float64, "b": pl.Int64, "c": pl.Float64}
 		)
-		steps = [MultiColumnTransformerMetadata(name="step1", transformer=step1)]
-		pipeline = Pipeline(steps)
-		result = pipeline.fit_transform(df_multi_column)
+		selected = df.select(selector).columns
+		assert selected == ["a", "c"]
 
-		assert result.columns == df_multi_column.columns
-
-	def test_lazyframe_support(self, lf_multi_column: pl.LazyFrame) -> None:
-		"""Test that LazyFrame is supported."""
-		step1 = MultiColumnTransformer(
-			[
-				ColumnTransformerMetadata(
-					name="imputer",
-					columns=["col_a", "col_b"],
-					transformer=Imputer(strategy=Strategy.MEAN),
-				)
-			]
+	def test_col_selector_with_dtype_class(self) -> None:
+		"""Test that dtype classes (not instances) work."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=[pl.Int64, pl.Float64],
+			transformer=Imputer(strategy=Strategy.MEAN),
 		)
-		steps = [MultiColumnTransformerMetadata(name="step1", transformer=step1)]
-		pipeline = Pipeline(steps)
-		result = pipeline.fit_transform(lf_multi_column)
+		selector = MultiColumnTransformer.col_selector(tf)
 
-		assert isinstance(result, pl.LazyFrame)
+		df = pl.DataFrame({"a": [1.0], "b": [2], "c": ["x"]}).cast(
+			{"a": pl.Float64, "b": pl.Int64}
+		)
+		selected = df.select(selector).columns
+		assert set(selected) == {"a", "b"}
 
-		collected = result.collect()
-		assert collected["col_a"].null_count() == 0
+	def test_col_selector_with_mixed_dtype_instances_and_classes(self) -> None:
+		"""Test that mixed dtype instances and classes work."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=[pl.Float64(), pl.Int64],  # instance and class
+			transformer=Imputer(strategy=Strategy.MEAN),
+		)
+		selector = MultiColumnTransformer.col_selector(tf)
+
+		df = pl.DataFrame({"a": [1.0], "b": [2], "c": ["x"]}).cast(
+			{"a": pl.Float64, "b": pl.Int64}
+		)
+		selected = df.select(selector).columns
+		assert set(selected) == {"a", "b"}
+
+	def test_col_selector_invalid_type_raises(self) -> None:
+		"""Test that invalid column types raise ValueError."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=[1, 2, 3],  # type: ignore
+			transformer=Imputer(strategy=Strategy.MEAN),
+		)
+
+		with pytest.raises(
+			ValueError,
+			match="Transformer columns must be all list\\[str\\] \\|"
+			" list\\[pl.DataType\\]",
+		):
+			MultiColumnTransformer.col_selector(tf)
+
+	def test_col_selector_mixed_str_and_dtype_raises(self) -> None:
+		"""Test that mixed str and dtype raises ValueError."""
+		tf = ColumnTransformerMetadata(
+			name="test",
+			columns=["col_a", pl.Float64],  # type: ignore
+			transformer=Imputer(strategy=Strategy.MEAN),
+		)
+
+		with pytest.raises(
+			ValueError,
+			match="Transformer columns must be all list\\[str\\] \\|"
+			" list\\[pl.DataType\\]",
+		):
+			MultiColumnTransformer.col_selector(tf)
