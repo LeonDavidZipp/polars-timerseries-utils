@@ -1,8 +1,9 @@
 from .base import BaseColumnTransformer, InverseTransformerMixin
-from .imputers import Imputer, RollingImputer
-from .scalers import MinMaxScaler, RobustScaler, StandardScaler
-from .smoothers import RollingSmoother, Smoother
-from .transformers import DiffTransformer, LagTransformer
+from .difference import DiffTransformer
+from .impute import Imputer, RollingImputer
+from .lag import LagTransformer
+from .scale import MinMaxScaler, RobustScaler, StandardScaler
+from .smooth import RollingSmoother, Smoother
 from .types import RollingStrategy, Strategy
 
 __all__ = [
