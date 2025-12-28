@@ -1,6 +1,6 @@
 import polars as pl
 
-from ..column_transformer.types import RollingStrategy
+from ..transformers.single.types import RollingStrategy
 
 
 def zscore(

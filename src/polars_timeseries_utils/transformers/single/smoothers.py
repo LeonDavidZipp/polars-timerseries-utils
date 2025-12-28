@@ -3,7 +3,7 @@ from typing import Self, override
 import polars as pl
 from polars._typing import PythonLiteral
 
-from ..metrics import rolling_zscore_df
+from ...stats import rolling_zscore_df
 from .base import BaseColumnTransformer
 from .types import RollingStrategy
 

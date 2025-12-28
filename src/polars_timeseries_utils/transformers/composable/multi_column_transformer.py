@@ -6,7 +6,7 @@ import polars as pl
 import polars.selectors as cs
 from polars._typing import PolarsDataType
 
-from ..column_transformer import BaseColumnTransformer
+from ..single import BaseColumnTransformer
 from .base import BaseMultiColumnTransformer
 
 
