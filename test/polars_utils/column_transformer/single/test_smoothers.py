@@ -1,7 +1,7 @@
 import polars as pl
 import pytest
 
-from polars_timeseries_utils.column_transformer import RollingSmoother, Smoother
+from polars_timeseries_utils.transformers.single import RollingSmoother, Smoother
 
 
 class TestSmoother:

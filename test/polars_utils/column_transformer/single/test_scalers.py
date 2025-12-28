@@ -1,7 +1,7 @@
 import polars as pl
 import pytest
 
-from polars_timeseries_utils.column_transformer import (
+from polars_timeseries_utils.transformers.single import (
 	MinMaxScaler,
 	RobustScaler,
 	StandardScaler,

@@ -2,7 +2,7 @@ from datetime import datetime
 
 import polars as pl
 
-from polars_timeseries_utils.timeseries.etl import clean_timeseries_df
+from polars_timeseries_utils.preprocessing.cleanup import clean_timeseries_df
 
 
 class TestCleanTimeseriesDf:

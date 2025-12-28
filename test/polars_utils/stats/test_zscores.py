@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_timeseries_utils.metrics.zscores import (
+from polars_timeseries_utils.stats.zscore import (
 	rolling_zscore,
 	rolling_zscore_df,
 	zscore,

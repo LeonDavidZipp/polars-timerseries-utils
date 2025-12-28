@@ -1,8 +1,8 @@
 import polars as pl
 import pytest
 
-from polars_timeseries_utils.column_transformer import Imputer, RollingImputer
-from polars_timeseries_utils.column_transformer.types import RollingStrategy, Strategy
+from polars_timeseries_utils.transformers.single import Imputer, RollingImputer
+from polars_timeseries_utils.transformers.single.types import RollingStrategy, Strategy
 
 
 class TestImputer:
