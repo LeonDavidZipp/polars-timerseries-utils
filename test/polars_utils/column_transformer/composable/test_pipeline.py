@@ -1,4 +1,5 @@
 import polars as pl
+import pytest
 
 from polars_timeseries_utils.transformers.composable import (
 	ColumnTransformerMetadata,
@@ -135,3 +136,25 @@ class TestPipeline:
 
 		collected = result.collect()
 		assert collected["col_a"].null_count() == 0
+
+	def test_empty_pipeline_raises(self) -> None:
+		"""Test that empty pipeline raises ValueError."""
+		with pytest.raises(ValueError, match="must have at least one step"):
+			Pipeline([])
+
+	def test_transform_without_fit_raises(self, df_multi_column: pl.DataFrame) -> None:
+		"""Test that transform without fit raises."""
+		step1 = MultiColumnTransformer(
+			[
+				ColumnTransformerMetadata(
+					name="imputer",
+					columns=["col_a"],
+					transformer=Imputer(strategy=Strategy.MEAN),
+				)
+			]
+		)
+		steps = [MultiColumnTransformerMetadata(name="step1", transformer=step1)]
+		pipeline = Pipeline(steps)
+
+		with pytest.raises(RuntimeError, match="must be fitted"):
+			pipeline.transform(df_multi_column)
