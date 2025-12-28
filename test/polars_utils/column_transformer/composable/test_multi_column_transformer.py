@@ -1,11 +1,11 @@
 import polars as pl
 import polars.selectors as cs
 import pytest
-from polars_timeseries_utils.composable import (
+
+from polars_timeseries_utils.transformers.composable import (
 	ColumnTransformerMetadata,
 	MultiColumnTransformer,
 )
-
 from polars_timeseries_utils.transformers.single import Imputer
 from polars_timeseries_utils.transformers.single.types import Strategy
 

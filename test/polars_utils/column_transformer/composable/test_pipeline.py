@@ -1,11 +1,11 @@
 import polars as pl
-from polars_timeseries_utils.composable import (
+
+from polars_timeseries_utils.transformers.composable import (
 	ColumnTransformerMetadata,
 	MultiColumnTransformer,
 	MultiColumnTransformerMetadata,
 	Pipeline,
 )
-
 from polars_timeseries_utils.transformers.single import Imputer, MinMaxScaler
 from polars_timeseries_utils.transformers.single.types import Strategy
 
