@@ -196,6 +196,18 @@ class TestStandardScaler:
 		with pytest.raises(ValueError, match="has not been fitted"):
 			scaler.inverse_transform(s)
 
+	def test_transform_preserves_nulls(self) -> None:
+		"""Test that nulls are preserved through transform."""
+		s = pl.Series("value", [1.0, None, 3.0, None, 5.0])
+		scaler = StandardScaler()
+		scaler.fit(s)
+
+		transformed = scaler.transform(s)
+
+		assert transformed.null_count() == 2
+		assert transformed[1] is None
+		assert transformed[3] is None
+
 
 class TestRobustScaler:
 	"""Tests for RobustScaler."""
@@ -269,3 +281,11 @@ class TestRobustScaler:
 
 		with pytest.raises(ValueError, match="has not been fitted"):
 			scaler.inverse_transform(s)
+
+	def test_transform_without_fit_raises(self) -> None:
+		"""Test that transform without fit raises."""
+		s = pl.Series("value", [1.0, 2.0, 3.0])
+		scaler = RobustScaler()
+
+		with pytest.raises(ValueError, match="has not been fitted"):
+			scaler.transform(s)
