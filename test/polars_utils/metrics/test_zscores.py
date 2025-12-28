@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_timeseries_utils.metrics.zscores import rolling_zscore
+from polars_timeseries_utils.metrics.zscores import rolling_zscore_df
 
 
 class TestRollingZscore:
@@ -14,7 +14,7 @@ class TestRollingZscore:
 			}
 		)
 
-		result = rolling_zscore(df, col="value", window_size=3)
+		result = rolling_zscore_df(df, col="value", window_size=3)
 
 		assert "z_score" in result.columns
 		assert result.lazy().collect().height == 10
@@ -23,7 +23,7 @@ class TestRollingZscore:
 		"""Test z-score with custom alias."""
 		df = pl.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0]})
 
-		result = rolling_zscore(df, col="value", window_size=3, alias="my_zscore")
+		result = rolling_zscore_df(df, col="value", window_size=3, alias="my_zscore")
 
 		assert "my_zscore" in result.columns
 		assert "z_score" not in result.columns
@@ -37,7 +37,7 @@ class TestRollingZscore:
 			}
 		)
 
-		result = rolling_zscore(df, col="value", window_size=3)
+		result = rolling_zscore_df(df, col="value", window_size=3)
 
 		assert "value" in result.columns
 		assert "other" in result.columns
@@ -46,7 +46,7 @@ class TestRollingZscore:
 		"""Test including median in output."""
 		df = pl.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0]})
 
-		result = rolling_zscore(
+		result = rolling_zscore_df(
 			df, col="value", window_size=3, with_median="rolling_med"
 		)
 
@@ -58,7 +58,7 @@ class TestRollingZscore:
 
 		# Note: with_mad parameter doesn't rename the internal 'mad' column,
 		# it just includes the 'mad' column in output
-		result = rolling_zscore(df, col="value", window_size=3, with_mad="mad")
+		result = rolling_zscore_df(df, col="value", window_size=3, with_mad="mad")
 
 		assert "mad" in result.columns
 
@@ -66,7 +66,7 @@ class TestRollingZscore:
 		"""Test min_samples parameter."""
 		df = pl.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0]})
 
-		result = rolling_zscore(df, col="value", window_size=5, min_samples=1)
+		result = rolling_zscore_df(df, col="value", window_size=5, min_samples=1)
 
 		# With min_samples=1, we should get z-scores even at the beginning
 		assert result["z_score"].null_count() < 5  # type: ignore
@@ -75,8 +75,8 @@ class TestRollingZscore:
 		"""Test centered window option."""
 		df = pl.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]})
 
-		result_centered = rolling_zscore(df, col="value", window_size=3, center=True)
-		result_not_centered = rolling_zscore(
+		result_centered = rolling_zscore_df(df, col="value", window_size=3, center=True)
+		result_not_centered = rolling_zscore_df(
 			df, col="value", window_size=3, center=False
 		)
 
@@ -91,7 +91,7 @@ class TestRollingZscore:
 		# Create data where median is clearly 5.0
 		df = pl.DataFrame({"value": [1.0, 3.0, 5.0, 7.0, 9.0, 5.0, 5.0, 5.0, 5.0, 5.0]})
 
-		result = rolling_zscore(df, col="value", window_size=5, min_samples=1)
+		result = rolling_zscore_df(df, col="value", window_size=5, min_samples=1)
 
 		# Later values at median (5.0) should have z-score near 0
 		zscores = result["z_score"].to_list()  # type: ignore
@@ -105,7 +105,7 @@ class TestRollingZscore:
 			{"value": [1.0, 2.0, 3.0, 4.0, 5.0, 100.0, 7.0, 8.0, 9.0, 10.0]}
 		)
 
-		result = rolling_zscore(df, col="value", window_size=5)
+		result = rolling_zscore_df(df, col="value", window_size=5)
 
 		# The outlier (100.0 at index 5) should have a high z-score
 		# Check values after the outlier where window includes it
@@ -118,7 +118,7 @@ class TestRollingZscore:
 		"""Test that LazyFrame input returns LazyFrame output."""
 		lf = pl.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0]}).lazy()
 
-		result = rolling_zscore(lf, col="value", window_size=3)
+		result = rolling_zscore_df(lf, col="value", window_size=3)
 
 		assert isinstance(result, pl.LazyFrame)
 
@@ -126,7 +126,7 @@ class TestRollingZscore:
 		"""Test that DataFrame input returns DataFrame output."""
 		df = pl.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0]})
 
-		result = rolling_zscore(df, col="value", window_size=3)
+		result = rolling_zscore_df(df, col="value", window_size=3)
 
 		assert isinstance(result, pl.DataFrame)
 
@@ -135,7 +135,7 @@ class TestRollingZscore:
 		# All same values = zero MAD
 		df = pl.DataFrame({"value": [5.0, 5.0, 5.0, 5.0, 5.0]})
 
-		result = rolling_zscore(
+		result = rolling_zscore_df(
 			df, col="value", window_size=3, zero_threshold=1e-5, fill_value=1e-4
 		)
 
@@ -151,7 +151,7 @@ class TestRollingZscore:
 		"""Test custom zero_threshold parameter."""
 		df = pl.DataFrame({"value": [1.0, 1.001, 1.002, 1.001, 1.0]})
 
-		result = rolling_zscore(
+		result = rolling_zscore_df(
 			df, col="value", window_size=3, zero_threshold=0.01, fill_value=0.1
 		)
 
