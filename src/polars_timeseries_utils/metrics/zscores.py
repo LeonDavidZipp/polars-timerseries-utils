@@ -53,6 +53,7 @@ def zscore_df(
 
 	cols = (
 		df.collect_schema().names()
+		+ [alias]
 		+ ([with_median] if with_median else [])
 		+ ([with_std] if with_std else [])
 	)
