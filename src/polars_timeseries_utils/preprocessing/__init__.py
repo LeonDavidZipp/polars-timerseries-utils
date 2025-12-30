@@ -1,7 +1,7 @@
 from .cleanup import clean_timeseries_df
 from .frequency import (
-	determine_frequency,
 	frequency_to_interval,
+	infer_frequency,
 	periods_to_relativedelta,
 )
 from .timestamp import (
@@ -15,7 +15,7 @@ from .types import TIMESTAMP_COLUMNS, Frequency
 
 __all__ = [
 	"clean_timeseries_df",
-	"determine_frequency",
+	"infer_frequency",
 	"frequency_to_interval",
 	"periods_to_relativedelta",
 	"cast_to_datetime_raises_if_error",

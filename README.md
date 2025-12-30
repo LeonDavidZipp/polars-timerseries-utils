@@ -219,10 +219,10 @@ cleaned = clean_timeseries_df(df, ts_col="timestamp", window_size=3, max_zscore=
 ```python
 from datetime import datetime
 import polars as pl
-from polars_timeseries_utils.preprocessing import determine_frequency, Frequency
+from polars_timeseries_utils.preprocessing import infer_frequency, Frequency
 
 series = pl.Series("ts", [datetime(2023, 1, i) for i in range(1, 11)])
-freq = determine_frequency(series)
+freq = infer_frequency(series)
 # Result: Frequency.DAILY
 ```
 
@@ -324,7 +324,7 @@ Scalers also implement `InverseTransformerMixin`:
 ### Preprocessing (`preprocessing`)
 
 - `clean_timeseries_df(df, ts_col, ...)` - Sort, dedupe, impute, and smooth
-- `determine_frequency(series)` - Detect time series frequency
+- `infer_frequency(series)` - Detect time series frequency
 - `handle_timestamp_column_raises_if_error(df, col)` - Auto-detect and cast timestamps
 - `next_timestamp(series, frequency)` - Get next timestamp in sequence
 - `last_timestamp(series)` - Get maximum timestamp
