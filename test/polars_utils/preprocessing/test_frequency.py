@@ -6,8 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 from src.polars_timeseries_utils.preprocessing.frequency import (
 	Frequency,
-	determine_frequency,
 	frequency_to_interval,
+	infer_frequency,
 	periods_to_relativedelta,
 )
 
@@ -69,33 +69,33 @@ class TestDetermineFrequency:
 		df = pl.DataFrame(
 			{"ts": [datetime(2023, 1, 1, i) for i in range(10)], "y": range(10)}
 		)
-		result = determine_frequency(df["ts"])
+		result = infer_frequency(df["ts"])
 		assert result == Frequency.HOURLY
 
 	def test_daily_frequency(self) -> None:
 		df = pl.DataFrame(
 			{"ts": [datetime(2023, 1, i) for i in range(1, 11)], "y": range(10)}
 		)
-		result = determine_frequency(df["ts"])
+		result = infer_frequency(df["ts"])
 		assert result == Frequency.DAILY
 
 	def test_monthly_frequency(self) -> None:
 		df = pl.DataFrame(
 			{"ts": [datetime(2023, i, 1) for i in range(1, 11)], "y": range(10)}
 		)
-		result = determine_frequency(df["ts"])
+		result = infer_frequency(df["ts"])
 		assert result == Frequency.MONTHLY
 
 	def test_yearly_frequency(self) -> None:
 		df = pl.DataFrame(
 			{"ts": [datetime(2015 + i, 1, 1) for i in range(10)], "y": range(10)}
 		)
-		result = determine_frequency(df["ts"])
+		result = infer_frequency(df["ts"])
 		assert result == Frequency.YEARLY
 
 	def test_lazyframe_input(self) -> None:
 		lf = pl.LazyFrame(
 			{"ts": [datetime(2023, 1, i) for i in range(1, 11)], "y": range(10)}
 		)
-		result = determine_frequency(lf.select(pl.col("ts")).collect().to_series())
+		result = infer_frequency(lf.select(pl.col("ts")).collect().to_series())
 		assert result == Frequency.DAILY

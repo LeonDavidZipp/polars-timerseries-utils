@@ -4,7 +4,7 @@ from . import preprocessing, stats
 from .preprocessing import (
 	Frequency,
 	clean_timeseries_df,
-	determine_frequency,
+	infer_frequency,
 )
 
 # Re-export commonly used stats functions
@@ -64,7 +64,7 @@ __all__ = [
 	"MultiColumnTransformerMetadata",
 	# Preprocessing
 	"clean_timeseries_df",
-	"determine_frequency",
+	"infer_frequency",
 	"Frequency",
 	# Stats
 	"zscore",
