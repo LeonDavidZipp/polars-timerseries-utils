@@ -58,7 +58,7 @@ def periods_to_relativedelta(n_periods: int, freq: Frequency) -> relativedelta:
 			raise ValueError("Unknown frequency")
 
 
-def determine_frequency(s: pl.Series) -> Frequency:
+def infer_frequency(s: pl.Series) -> Frequency:
 	"""
 	Determines the frequency of a timestamp series using pandas' infer_freq.
 
