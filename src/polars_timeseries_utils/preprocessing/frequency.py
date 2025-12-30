@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pandas as pd
 import polars as pl
 from dateutil.relativedelta import relativedelta
@@ -67,10 +69,21 @@ def determine_frequency(s: pl.Series) -> Frequency:
 		Frequency: The determined frequency (HOURLY, DAILY, MONTHLY, YEARLY).
 	"""
 
-	freq = pd.infer_freq(s.to_pandas())
-
-	if freq is None or freq == "":
-		return Frequency.UNKNOWN
+	dt_idx = pd.DatetimeIndex(s.drop_nulls().drop_nans().to_pandas())
+	freq = pd.infer_freq(dt_idx)
+	if not freq:
+		freq_td: timedelta | None = s.diff().mode().item()
+		if not freq_td:
+			return Frequency.UNKNOWN
+		diff_seconds = freq_td.total_seconds()
+		if diff_seconds <= 3600:
+			return Frequency.HOURLY
+		elif diff_seconds <= 86400:
+			return Frequency.DAILY
+		elif diff_seconds <= 2592000:
+			return Frequency.MONTHLY
+		else:
+			return Frequency.YEARLY
 
 	freq_upper = freq.upper()
 
